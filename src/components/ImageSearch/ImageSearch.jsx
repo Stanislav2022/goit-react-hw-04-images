@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect  } from 'react'
 import {getImages} from "../../services/api"
 import Searchbar from './Searchbar/Searchbar'
@@ -60,7 +61,7 @@ export default function ImageSearch() {
         }
     }
     fetchImages();
-}, [search]);
+    }, [search]);
     
     const onSearch = (search) => {
         setSearch(search)
