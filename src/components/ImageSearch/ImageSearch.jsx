@@ -9,44 +9,67 @@ import Button from './Button/Button'
         
 export default function ImageSearch() {
 
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
     const [items, setItems] = useState([]);
     const [totalHits, setTotalHits] = useState(0);
     const [loading, setLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
-    const [largeImageURL, setLargeImageURL] = useState('');
-    const [tags, setTags] = useState('');
-
+    const [largeImageURL, setLargeImageURL] = useState("");
+    const [tags, setTags] = useState("");
+    const [error, setError] = useState(null);
 
     const per_page = 12;
-    const error = null;
 
+    const loadeMore = () => {
+        setPage((prevPage) => prevPage + 1
+        )
+    }
+    const isImages = Boolean(items.length);
 
     useEffect(() => {
+        if (!search) { return };
         const fetchImages = async () => {
             setLoading(true);
             try {
                 const data = await getImages(search, page);
                 setTotalHits(data.totalHits);
-                setItems((items) => [...items, ...data.hits])
+                setItems((prevItems) => { return [...prevItems, ...data.hits] });
             } catch (error) {
-                console.log(error);
+                setError(error);
             } finally {
                 setLoading(false)
             }
         }
-        fetchImages()
-        }, [search, page]);
+        fetchImages();
+    }, [page]);
 
+    useEffect(() => {
+        if (!search) { return };
+        setItems([])
+    const fetchImages = async () => {
+        setLoading(true);
+        try {
+            const data = await getImages(search, page);
+            setTotalHits(data.totalHits);
+            setItems((prevItems) => { return [...prevItems, ...data.hits] });
+        } catch (error) {
+            setError(error);
+        } finally {
+            setLoading(false)
+        }
+    }
+    fetchImages();
+}, [search]);
+    
     const onSearch = (search) => {
         setSearch(search)
     }
 
-    const openModal = (largeImageURL, tags) => {
+    const openModal = ({largeImageURL, tags}) => {
         setModalOpen(true);
         setLargeImageURL(largeImageURL);
-        setTags(tags);       
+        setTags(tags);
     }
 
     const closeModal = () => {
@@ -54,20 +77,11 @@ export default function ImageSearch() {
         setLargeImageURL('');
         setTags('');
     }
-
-    const loadeMore = () => {
-        setPage((page) => page + 1
-        )
-    }
-    
-    const isImages = Boolean(items.length);
-
-
+   
   return (
         <div>
-            {modalOpen && <Modal onClose={closeModal}>
-                <img src={largeImageURL} alt={tags}/>
-                </Modal>}
+            {modalOpen && <Modal onClose={closeModal}
+                 largeImageURL={largeImageURL} tags={tags} />}
             {error && <p>Будь ласка спробуйте пізніше...</p>}
             <Searchbar onSubmit={onSearch} />
             {isImages && <ImageGallery items={items} onClick={openModal} />}
@@ -101,12 +115,12 @@ export default function ImageSearch() {
 
     // componentDidUpdate(_, prevState) {
     //     const { search, page } = this.state;
-    //     if (search && page !== prevState.page) {
-    //         this.fetchImages(search, page);
-    //     } else if (search && prevState.search !== search) {
-    //         this.setState({ items: [] });
-    //         this.fetchImages(search, page); 
-    //     }
+        // if (search && page !== prevState.page) {
+        //     this.fetchImages(search, page);
+        // } else if (search && prevState.search !== search) {
+        //     this.setState({ items: [] });
+        //     this.fetchImages(search, page); 
+        // }
     // }
 
     // async fetchImages() {
